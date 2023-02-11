@@ -89,26 +89,17 @@ func (m *MainForm) onDraw(da *gtk.DrawingArea, ctx *cairo.Context) {
 
 func (m *MainForm) drawTriangles(ctx *cairo.Context) {
 	for _, t := range triangles {
-		m.drawTriangle(ctx, t)
+		t.draw(ctx)
 	}
-}
-
-func (m *MainForm) drawTriangle(ctx *cairo.Context, t triangle) {
-	ctx.SetSourceRGB(0, 0, 0)
-	ctx.MoveTo(t.p1.x, t.p1.y)
-	ctx.LineTo(t.p2.x, t.p2.y)
-	ctx.LineTo(t.p3.x, t.p3.y)
-	ctx.LineTo(t.p1.x, t.p1.y)
-	ctx.Stroke()
 }
 
 func (m *MainForm) onKeyPress(_ *gtk.ApplicationWindow, e *gdk.Event) {
 	ke := gdk.EventKeyNewFromEvent(e)
 	switch ke.KeyVal() {
 	case 32, 83, 115: // space, s and S
-		subDivideTriangles()
+		triangles.subDivide()
 	case 67, 99: // c and C
-		clearTriangles()
+		triangles.clear()
 	case 81, 113: // q and Q
 		m.window.Close()
 		return

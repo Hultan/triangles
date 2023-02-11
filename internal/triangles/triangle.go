@@ -1,5 +1,9 @@
 package triangles
 
+import (
+	"github.com/gotk3/gotk3/cairo"
+)
+
 type side int
 
 const (
@@ -15,8 +19,6 @@ type triangle struct {
 	p1, p2, p3 point
 }
 
-var triangles []triangle
-
 func createInitialTriangle(h float64, w float64) {
 	t := triangle{
 		p1: point{100, h - 100},
@@ -25,25 +27,6 @@ func createInitialTriangle(h float64, w float64) {
 	}
 
 	triangles = append(triangles, t)
-}
-
-func clearTriangles() {
-	triangles = nil
-}
-
-func subDivideTriangles() {
-	for i := len(triangles) - 1; i >= 0; i-- {
-		t := triangles[i]
-
-		// Remove triangle with index i
-		triangles = append(triangles[:i], triangles[i+1:]...)
-
-		// Then subdivide the triangle
-		t1, t2, t3, t4 := t.subDivide()
-
-		// Add new triangles to list
-		triangles = append(triangles, t1, t2, t3, t4)
-	}
 }
 
 func (t triangle) subDivide() (t1, t2, t3, t4 triangle) {
@@ -88,4 +71,13 @@ func (t triangle) getMidPoint(s side) point {
 
 	// Return midpoint
 	return point{x1 + (x2-x1)/2, y1 + (y2-y1)/2}
+}
+
+func (t triangle) draw(ctx *cairo.Context) {
+	ctx.SetSourceRGB(0, 0, 0)
+	ctx.MoveTo(t.p1.x, t.p1.y)
+	ctx.LineTo(t.p2.x, t.p2.y)
+	ctx.LineTo(t.p3.x, t.p3.y)
+	ctx.LineTo(t.p1.x, t.p1.y)
+	ctx.Stroke()
 }
