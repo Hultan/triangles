@@ -10,20 +10,11 @@ import (
 	"github.com/hultan/softteam/framework"
 )
 
-type point struct {
-	x, y float64
-}
-type triangle struct {
-	p1, p2, p3 point
-}
-
 type MainForm struct {
 	window  *gtk.ApplicationWindow
 	builder *framework.GtkBuilder
 	da      *gtk.DrawingArea
 }
-
-var triangles []triangle
 
 // NewMainForm : Creates a new MainForm object
 func NewMainForm() *MainForm {
@@ -90,16 +81,16 @@ func (m *MainForm) onDraw(da *gtk.DrawingArea, ctx *cairo.Context) {
 	ctx.Fill()
 
 	if len(triangles) == 0 {
-		t := triangle{
-			p1: point{100, h - 100},
-			p2: point{w - 100, h - 100},
-			p3: point{w / 2, 100},
-		}
-
-		triangles = append(triangles, t)
+		createInitialTriangle(h, w)
 	}
 
 	m.drawTriangles(ctx)
+}
+
+func (m *MainForm) drawTriangles(ctx *cairo.Context) {
+	for _, t := range triangles {
+		m.drawTriangle(ctx, t)
+	}
 }
 
 func (m *MainForm) drawTriangle(ctx *cairo.Context, t triangle) {
@@ -111,43 +102,16 @@ func (m *MainForm) drawTriangle(ctx *cairo.Context, t triangle) {
 	ctx.Stroke()
 }
 
-func (m *MainForm) drawTriangles(ctx *cairo.Context) {
-	for _, t := range triangles {
-		m.drawTriangle(ctx, t)
-	}
-}
-
 func (m *MainForm) onKeyPress(_ *gtk.ApplicationWindow, e *gdk.Event) {
 	ke := gdk.EventKeyNewFromEvent(e)
-	if ke.KeyVal() == 32 {
-		m.SubDivision()
+	switch ke.KeyVal() {
+	case 32, 83, 115: // space, s and S
+		subDivideTriangles()
+	case 67, 99: // c and C
+		clearTriangles()
+	case 81, 113: // q and Q
+		m.window.Close()
+		return
 	}
 	m.da.QueueDraw()
-}
-
-func (m *MainForm) SubDivision() {
-	for i := len(triangles) - 1; i >= 0; i-- {
-		t := triangles[i]
-		// Remove triangle with index i
-		triangles = append(triangles[:i], triangles[i+1:]...)
-		// Then subdivide the triangle
-		m.SubDivisionTriangle(t)
-	}
-}
-
-func (m *MainForm) SubDivisionTriangle(t triangle) {
-	m1 := getMidPoint(t.p1, t.p2)
-	m2 := getMidPoint(t.p3, t.p2)
-	m3 := getMidPoint(t.p1, t.p3)
-
-	t1 := triangle{t.p1, m1, m3}
-	t2 := triangle{m1, t.p2, m2}
-	t3 := triangle{m2, t.p3, m3}
-	t4 := triangle{m1, m2, m3}
-
-	triangles = append(triangles, t1, t2, t3, t4)
-}
-
-func getMidPoint(p1, p2 point) point {
-	return point{p1.x + (p2.x-p1.x)/2, p1.y + (p2.y-p1.y)/2}
 }
